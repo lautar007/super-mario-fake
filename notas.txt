@@ -1,0 +1,195 @@
+----------------------------Anotaciones del proyecto-----------------------------
+
+1. El origen de una imagen en el videojuego funciona de la siguiente manera: 
+La imagen coloca dentro de ejes cartesianos, donde la esquina superior izquerda simboliza el valor X=0 y Y=0; 
+La esquina inferior derecha, es decir, el otro extremo de la imagen, tendría los valores X=1 y Y=1;
+Por lo que, como la imagen se coloca en el canvas por defecto con referencia al centro de la imagen, el valor del origen por defecto sería entonces X=0.5, Y=0.5;
+Teniendo esto en cuenta, ya podemos definir con presición la referencia del origen de la imagen, manipulando las coordenadas con el método 'setOrigin(eje X, eje Y)'.
+
+
+
+
+
+2. En videojuegos, un 'sprite sheet' es una imagen que representa la superposición de muchas imágenes. Se utiliza para generar animación de entidades. En vez de colocar cada imagen de la animación en archivos separados, se genera un solo archivo, dentro del cual ya están todas las imagenes que usará la entidad animada. 
+
+
+
+
+
+3.Como un sprite sheet contiene más de una imagen dentro del archivo, necesitamos una forma de poder dividir la imagen al momento de renderizarla. Para ello, el método '.load.spriteSheet(id, ubicación, objeto{frameWidth, frameHeight}), tiene como vemos, un objeto con dos propiedades. Cada imagen dentro del archivo será un frame de la animación, por lo que con estas propiedades indicamos cuanto espacio ocupa cada frame dentro del sprite sheet.
+Podemos hacer una fórmula para calcular el frameWidth y el frameHeight fácilmente. Lo que hacemos es dividir el ancho o el largo total de la imagen por la cantidad de divisiones internas que tiene. Es decir, si tenemos 6 imágenes dentro del archivo, en fila, y el ancho total de la imágen es 108px, entonces 108/6 = 18px; el frameWidth del sprite sheet es 18.  
+
+
+
+
+
+4.Una vez que definimos los cursores dentro del juego, podremos acceder a cada una de sus teclas mediante la propiedad keys. Está propiedad contendrá las teclas left, right, up y down, que a su vez tendrán sus propios métodos, como por ejemplo '.isDown'. Este método sirve para indicar si la tecla se está presionando y lo que hace es retornar un booleano. Por lo tanto, con el uso de un condicional if podemos darle comandos a las entidades por su id y así moverlos cambiando sus coordenadas.
+
+
+
+
+
+5.Como la función '.anims.generateFrameNumbers(id, {frame de inicio, frame de final})' tomará el sprite por id y contará sus divisiones, imagen por imagen, consecutivamente, es preferible que estas imágenes no estén mezcladas, sino que una misma animación tenga una consecución y esté toda junta de principio a fin.
+
+
+
+
+
+6. La física dentro de un videojuego se refiere a la manera en que el juego imitará la física del mundo real. Principalmente se refiere a la gravedad, pero también quizás a la inercia de los objetos. Los tres tipos de física que están disponibles en Phaser son 'arcade', 'impact' y 'matter'. 
+Las físicas se colocan en al constante 'config', como parte de las configuraciones previas. Será la propiedad physics y su valor será un objeto.
+El problema con las físicas es que ahora, las entidades que se ven influenciadas por ella, van a tener una forma distinta de renderizarse en la función create: 
+
+    this.mario = this.physics.add.sprite(eje X, eje Y, id del sprite).setOrigin(eje X, eje Y).setGravityY(300)
+
+Nótese que ahora podemos asignarle gravedad a la entidad individualmente, lo que nos ayuda a diferenciar entre entidades más pesadas o más livianas. Cabe aclarar que este método no es obligatorio; de no existir, la entidad tendrá la gravedad por defecto que pusimos en la configuración.
+Un problema muy común al colocar la gravedad en un principio es que si no tenemos un suelo que tenga una física de colisión (es decir, una propiedad de "dureza" o "superficie" por así decirlo), la entidad caerá fuera del frame, pues no choca con nada en su caída.
+
+
+
+
+
+7. Para poder generar el impacto en los suelos, vamos a agruparlos dentro de la propiedad 'floor'. Para ello estamos usando el método '.staticGroup()', que lo que hace es agrupar las renderizaciones de aquellos recursos que comparten una misma física: 
+    
+    this.floor = this.physics.add.staticGroup();
+
+Una vez que tenemos esta propiedad, podemos crear suelos de la siguiente forma:
+
+    this.floor.create(eje X, eje Y - alto del suelo, id del recurso).refreshBody();
+
+El método '.refreshBody()' no contiene ningún argumento, pero es necesario, sobre todo al escalar el tamaño del recurso. Lo que hace es refrescar el tamaño de la plataforma para que se adapte a la nueva escala. Sin este método, la imagen escala visualmente pero la física de suelo no. Sirve solo para plataformas estáticas, puesto que las móviles se ajustan automáticamente.
+Una vez que tenemos agrupados los distintos suelos, debemos declarar la colisión de la entidad con el suelo: 
+
+    this.physics.add.collider(entidad, this.floor); 
+
+De la misma forma se establecen las distintas colisiones colocando como argumentos del método '.collider()' las dos entidades que deben colisionar. 
+
+
+
+
+
+8.Al crear las físicas y las colisiones con el suelo y los bordes hemos encerrado a Mario, pero en el videojuego necesitamos controlar una "cámara" para que siga al personaje en su recorrido por el nivel. Por lo que para ello usaremos la propiedad .world dentro la propiedad physics, que contiene el método '.setBounds(inicio eje X, inicio eje Y, largo del mundo, alto del mundo)'. Veamos un ejemplo: 
+
+    this.physics.world.setBounds(0, 0, 2000, config.height); 
+
+Aquí estamos definiendo que el mundo está delimitado desde el punto 0, 0 (esquina superior derecha de la pantalla), y tendrá 2000px de largo en el eje X y, dado que no necesitamos expandir el mundo verticalmente, entonces tendrá un alto equivalente al que ya hemos colocado en la configuración para el frame. 
+
+Otra propiedad importante del juego es '.cameras'. Esta es la propiedad que controla la cámara y a su vez tiene la propiedad '.main' que controla la cámara principal. Primero, utilizando el mismo método que para las físicas, le indicaremos a la cámara el tamaño del mundo: 
+
+    this.cameras.main.setBounds(0, 0, 2000, config.height);
+
+Luego, le diremos a la cámara principal qué entidad debe seguir, utilizando el método llamado '.startFollow(entidad)':
+
+    this.cameras.main.startFollow(this.entities.mario);
+
+
+
+
+
+9. Los audios se cargan en la función preload con el método '.load.audio(id, dirección del recurso)':
+
+    this.load.audio('gameOver', 'assets\sound\music\gameover.mp3');
+
+Al momento de utilizarlo, lo usaremos en la función update con la propiedad '.sound' y el método '.play(id)' en el momento en que queremos que suene: 
+
+    this.sound.play('gameOver');
+
+Si necesitamos controlar el volumen del audio, entonces podemos reproducirlo con '.sound.add(id, {volume: valor}).play()': 
+
+    this.sound.add('gameOver', {volume:0.2}).play();
+
+Los audios están siendo modularizados en otro archivo (audios.js), que contiene una función que toma como argumento el método '.load()' y, recorriendo cada elemento de un arreglo con el método '.forEach()', carga automáticamente todos los audios. La función, llamada '.initAudio()' es exportada y utilizada en la función 'preload' del archivo game.js.
+
+Este archivo también puede contener una función para reproducir el audio, que toma como argumento el key del audio y las configuraciones como el volumen, la diferencia sería mínima, pero es una opción. 
+
+
+
+
+
+10. Las colisiones entre entidades, como por ejemplo Mario-enemigo, utilizan el mismo método que las colisiones con el suelo: '.add.collider()'. Pero este método tiene más argumentos: 
+
+    this.physics.add.collider(entidad1, entidad2, función callback, procesamiento de colisión, contexto de ejecución);
+
+Sabemos que los dos primeros argumentos corresponden a las dos entidades que se van a colisionar. El callback hace referencia a la función que contiene la lógica de la colisión, es decir, qué sucede cuando ocurre. El procesamiento se refiere a un booleano que controla si la colisión se procesa o no, por defecto creo que es true, pero lo podemos dejar en null, y el contexto es sumamente importante y contendrá la palabra 'this', que recordemos que hace referencia al contexto del juego. Si no le pasamos 'this' como contexto, cuando usemos la función caalback no podremos usar this dentro de ella, y hará crash cada vez que usemos esa palabra reservada, ya que no se referirá al contexto del juego, sino al contexto global. 
+Ejemplo del método: 
+
+    this.physics.add.collider(mario, goomba1, onHitEnemy, null, this); 
+
+Ejemplo función 'onHitEnemy':
+Esta función tomará como argumentos automáticamente las dos entidades que se colisionan.
+
+    export function onHitEnemy(mario, enemy){
+        //Golpe mortal: Para matar a un enemigo, Mario debe caer encima de él. Por lo que, en un condicional, nos aseguramos de que Mario esté tocando por abajo a la vez que el enemigo está tocando por arriba:
+        //Nombre del tipo de enemigo:  
+        console.log(enemy.texture.key);
+        if(mario.body.touching.down && enemy.body.touching.up){
+            //Detenemos al enemigo:
+            enemy.setVelocityX(0);
+            //Sonido al aplastar:
+            this.sound.add('stomp', {volume:0.2}).play(); 
+            //El enemigo es aplastado:
+            //(cambiar el frame según corresponda al tipo de enemigo)
+            enemy.setFrame(2);
+            //Pequeño salto de Mario:
+            mario.setVelocityY(-200);
+
+            //Luego de un 500ms el enemigo desaparece.
+            setTimeout(()=>{
+                enemy.destroy();
+            }, 500)
+        }
+        else{
+            //De cualquier otra manera en que Mario y su enemigo se toquen, resultará en la muerte de Mario.
+            //Este código se explica en detalle al final de la función 'update' del archivo game.js. 
+            mario.isDead = true;
+            mario.anims.play('mario-dead');
+            this.sound.add('gameOver', {volume:0.2}).play();
+            setTimeout(()=>{
+                mario.setVelocityY(-350)
+                mario.setCollideWorldBounds(false);
+            },100);
+            setTimeout(()=>{
+                this.scene.restart();
+            }, 7000);
+        };
+    };
+
+Aquí la función se está exportando porque lo estamos modularizando.
+
+
+
+
+
+11. Para poder utilizar texto en nuestro juego, podemos cargar la fuente en la etiqueta style del HTML, usando @font-face con CSS: 
+
+     @font-face {
+        font-family: 'pixelFont';
+        src: url('assets/fonts/SuperMario.ttf');
+    }
+
+Luego, al momento de utilizarlo, lo hacemos con el método '.text(eje X, eje Y, texto, {configuraciones})'. Un ejemplo:
+
+    const scoreText = this.add.text(coins.x, coins.y, '100', {
+        fontFamily: 'pixelFont',
+        fontSize: 15
+        });
+
+En este ejemplo estamos tomando como coordenadas la posición de cada moneda para que el texto se vea al lado.  
+Un error muy común es que, como la fuente se carga al momento de la primera inicialización, la primera vez que aparezca en pantalla no esté cargada y ya luego sí. 
+Para solucionar esto, podemos inicializar la fuente en los estilos del body, dentro de la etiqueta style del HTML.
+Para que podamos animar el texto o trabajar con él de alguna forma, es común guardar esta ejecución dentro de una constante, en este caso 'scoreText'.
+
+
+
+
+
+12. El método '.tweens.add(config)', nos permite hacer animaciones cortas con algunos elementos gráficos como el texto. Dentro de sus configuraciones tendremos las propiedades 'targets', donde definimos la variable o constante donde se encuentra el recurso, la duración en ms, etc. Veamos un ejemplo: 
+
+    this.tweens.add({
+            targets: scoreText,
+            duration: 500,
+            y: scoreText.y -20
+        })
+
+Aquí le estamos dando al texto del puntaje una animación de medio segundo donde el texto se moverá 20 píxeles hacia arriba con respecto de su posición inical. De la misma forma podemos configurar el eje X fácilmente.
+A pesar de que el ejemplo es simple, este método es bastante extenso, recomiendo googlearlo para leer su documentación.
+La condiguración también permite crear el método 'onComplete', cuyo valor será una función con cualquier lógica que querramos que ocurra al terminar la animación.
