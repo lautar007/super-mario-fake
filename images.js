@@ -16,7 +16,7 @@ const INIT_IMAGES = [
     {
         key:'superMushroom',
         path: '/assets/collectibles/super-mushroom.png'
-    }
+    },
 ];
 
 export function initImages(load){

@@ -83,4 +83,14 @@ export const createAnimations = (game) => {
         frameRate: 12,
         repeat: -1
     });
+
+    //Animación de romper bloque.
+    game.anims.create({
+        key:'mario-broke-block',
+        frames: game.anims.generateFrameNumbers(
+            'block-stones',  {start: 0, end: 3},
+        ),
+        frameRate: 12,
+        repeat:-1
+    });
 }

@@ -47,8 +47,8 @@ export function checkControls(mario, keys){
 
     //Salto: 
     //¿Por qué el salto está en un if separado? por que queremos que salte y además se mueva hacia los lados. 
-    if(keys.up.isDown){
-        mario.y -= 6;
+    if(keys.up.isDown && mario.body.touching.down){
+        mario.setVelocityY(-400);
         //Podemos controlar la altura del salto con el método '.setVelocityY(velocidad)':
         //Sin embargo, es necesario, para que la entidad no vuele, que el condicional también asegure que el cuerpo de la entidad está tocando por abajo, es decir, el suelo: '.body.touching.down'
         mario.anims.play(anims.jump, true);

@@ -17,6 +17,14 @@ const INIT_AUDIOS = [
     {
         key:'powerUp',
         path:'/assets/sound/effects/consume-powerup.mp3'
+    },
+    {
+        key:'blockBump',
+        path: 'assets/sound/effects/block-bump.wav'
+    },
+    {
+        key:'blockBroke',
+        path: 'assets/sound/effects/break-block.wav'
     }
 ]
 

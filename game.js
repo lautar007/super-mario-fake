@@ -8,13 +8,13 @@ import { checkControls } from "./controls.js";
 //Función que inicia las imágenes: 
 import { initImages } from "./images.js";
 //Funciones de colisión:
-import { onHitEnemy, onCatchCoin, onCatchMushroom } from "./collideFunctions.js";
+import { onHitEnemy, onCatchCoin, onCatchMushroom, onHitBlock } from "./collideFunctions.js";
 //Función que inicia los audios: 
 import { initAudio } from "./audios.js";
 //Función que inicia los spritesheets (visuales):
 import { initSpriteSheets } from "./spriteSheets.js";
 //Funciones del editor de mundo: 
-import { createFloor, createCoins } from "./worldEditorFunc.js";
+import { createFloor, createCoins, createBricks } from "./worldEditorFunc.js";
 
 //--------------------------------------------------------------
 //Este videojuego está hecho con una librería llamada Phaser. Esta librería consta de un archivo js que nos provee de un objeto. Este objeto contiene métodos necesarios para poder desarrollar el juego. Podremos acceder a este objeto mediante window.Phaser. 
@@ -42,7 +42,7 @@ const config = {
         //podremos configurar este tipo de físicas:
         arcade: {
             //Por ejemplo, podemos darle valor a la gravedad en ambos ejes:
-            gravity: {y: 300},
+            gravity: {y: 400},
             //El debug es una propiedad que permite que podamos tener más información sobre las físicas, pero por ahora no lo necesitamos.
             debug: false,
         },
@@ -136,30 +136,45 @@ function create () {
     //Lista de enemigos del nivel.
     let enemies = ['goomba1', 'goomba2'];
 
-    //---------------------------FÍSICAS Y COLISIONES--------------------------------
+    //----------------------------OBJETOS DEL ESCENARIO-----------------------------
     //Para que Mario no se caiga, debemos controlar la física del suelo, por lo tanto crearemos una nuevo propiedad en el juego que agrupe las plataformas, ya que no hay una sola y el mismo suelo del juego está dividido, generando zonas de vacío donde sí queremos que el personaje pueda caerse. (Ver nota 7)
     this.floor = this.physics.add.staticGroup()
 
     //Conjunto de plataformas del suelo: 
     createFloor(this.floor);
-    
-    //Estableciendo colisiones con el suelo:
-    this.physics.add.collider(this.entities.mario, this.floor);
-    
+
     //Generando monedas:
     //Las monedas también son un conjunto que comparte la misma física (ver nota 7)
     this.coins = this.physics.add.staticGroup();
     createCoins(this.coins);
 
+    //Generando hongos: 
+    this.mushrooms = this.physics.add.staticGroup();
+    this.mushrooms.create(1210, 400, 'superMushroom').setScale(2);
+
+    //Hay dos tipos de bloques de ladrillo, los que contienen premio oculto y los que no. 
+    //Bloques sin premio: 
+    this.normalBlocks = this.physics.add.staticGroup();
+    createBricks(this.normalBlocks)
+
+
+    //---------------------------FÍSICAS Y COLISIONES--------------------------------
+    
+    //Estableciendo colisiones con el suelo:
+    this.physics.add.collider(this.entities.mario, this.floor);
+    
     //Colision con las monedas:
     //El método '.overlap()', es similar al collider, vemos que usa los mismos argumentos, pero no queremos que Mario choque con la moneda, sino que pase por encima.
     this.physics.add.overlap(this.entities.mario, this.coins, onCatchCoin, null, this);
 
-    //Generando hongos: 
-    this.mushrooms = this.physics.add.staticGroup();
-    this.mushrooms.create(1210, 400, 'superMushroom').setScale(2);
     //Físicas del hongo:
     this.physics.add.overlap(this.entities.mario, this.mushrooms, onCatchMushroom, null, this);
+
+    
+    //Fisicas con bloques normales: 
+    this.physics.add.collider(this.entities.mario, this.normalBlocks, onHitBlock, null, this);
+
+    //-------------------------------------------------------
 
     //COLISIONES DE ENEMIGOS -----------------------
     //Usando la lista de enemigos podemos darles a todos por igual la colisión con el suelo:
@@ -228,5 +243,6 @@ function update () {
             this.scene.restart();
         }, 7500)
     }
+
 };
 

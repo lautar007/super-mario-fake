@@ -24,6 +24,12 @@ const INIT_SPRITESHEETS = [
         path: '/assets/entities/mario-grown.png',
         frameWidth: 18,
         frameHeight: 32
+    },
+    {
+        key: "block-stones",
+        path: 'assets/blocks/overworld/brick-debris.png',
+        frameWidth: 8,
+        frameHeight: 8
     }
 ];
 

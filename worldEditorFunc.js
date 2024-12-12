@@ -36,3 +36,19 @@ export function createCoins(coins){
     })
 }
 
+
+//Bloques de ladrillo: 
+const COORD_BRICKS = [
+    {x:660 , y:400 },
+    {x:692 , y:400 },
+    {x:724 , y:400 },
+    {x:756 , y:400 },
+    {x:788 , y:400 },
+    {x:820 , y:400 },
+]
+
+export function createBricks(blocks){
+    COORD_BRICKS.forEach(brick =>{
+        blocks.create(brick.x, brick.y, 'block').setScale(2).setSize(32,32).setOffset(0, 0).refreshBody();
+    })
+}

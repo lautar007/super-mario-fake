@@ -51,6 +51,7 @@ export function onHitEnemy(mario, enemy){
 //Colisión con monedas:
 //Aunque aquí mario no se usa, es importante ponerlo xq sino crashea.
 export function onCatchCoin(mario, coins){
+    mario.body.touching.down = false
     //Al tocar la moneda queremos que deje de verse: 
     this.sound.add('catchCoin', {volume:0.2}).play();
     coins.destroy();
@@ -108,4 +109,37 @@ export function onCatchMushroom(mario, mushroom){
         mario.isBlocked = false;
         this.physics.world.resume();
     }, 900) 
+}
+
+//Colision con Bloques: 
+export function onHitBlock(mario, block){
+   if(!mario.grown && mario.body.touching.up){
+    this.sound.play('blockBump');
+    this.tweens.add({
+        targets: block,
+        duration: 100,
+        y: block.y -20,
+        //Al terminar la animación, haremos otra animación para quitar el puntaje de pantalla:
+        onComplete: () => {
+            //Dejamos que se vea por un ratito y luego lo quitamos.
+            this.tweens.add({
+                targets: block,
+                duration: 200,
+                y: block.y +20
+            })
+        }
+    })
+   }
+   else if(mario.grown && mario.body.touching.up){
+    let stones1 = this.add.sprite(block.x -20, block.y-20, 'block-stones').setScale(1.5);
+    let stones2 = this.add.sprite(block.x +20, block.y-20, 'block-stones').setScale(1.5);
+    stones1.anims.play('mario-broke-block');
+    stones2.anims.play('mario-broke-block');
+    this.sound.play('blockBroke')
+    block.destroy();
+    setTimeout(()=>{
+        stones1.destroy();
+        stones2.destroy();
+    }, 200)
+   }
 }
